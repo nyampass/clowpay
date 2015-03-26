@@ -4,6 +4,8 @@ WebPay API wrapper library for Clojure
 
 ## Usage
 
+[![Clojars Project](http://clojars.org/clowpay/latest-version.svg)]
+
 ```clojure
 user> (require '[clowpay.core :as cpay])
 nil
