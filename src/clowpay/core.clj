@@ -35,13 +35,14 @@
 (defn ^CustomerResponse retrieve-customer [^WebPay webpay ^String customer-id]
   (.. webpay customer (retrieve customer-id)))
 
-(defn ^ChargeResponse execute-charge [^WebPay webpay amount ^String currency
-                                      & {:keys [customer-id shop token-id description
-                                                capture expire-days uuid]}]
+(defn ^ChargeResponse execute-charge
+  [^WebPay webpay amount
+   & {:keys [currency customer-id shop token-id description capture expire-days uuid]
+      :or {currency "jpy"}}]
   (assert (or (not (nil? customer-id)) (not (nil? token-id))))
   (-> (.. webpay charge createRequest)
       (.amount (long amount))
-      (.currency currency)
+      (.currency ^String currency)
       (cond->
         customer-id
         (.customer ^String customer-id)
