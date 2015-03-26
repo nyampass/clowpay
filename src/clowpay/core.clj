@@ -24,12 +24,13 @@
                     (name ^String name))]
     (.. webpay token createRequest (card request) execute)))
 
-(defn ^TokenResponse retrieve-token [^WebPay webpay ^String token-id]
-  (.. webpay token (retrieve token-id)))
+(defn ^TokenResponse retrieve-token [^WebPay webpay ^String token]
+  (.. webpay token (retrieve token)))
 
-(defn ^CustomerResponse create-customer [^WebPay webpay ^String token-id
+(defn ^CustomerResponse create-customer [^WebPay webpay ^String token
                                          & {:keys [email description uuid]}]
   (-> (.. webpay customer createRequest)
+      (.card ^String token)
       (cond->
         email
         (.email ^String email)
@@ -39,24 +40,24 @@
         (.uuid ^String uuid))
       .execute))
 
-(defn ^CustomerResponse retrieve-customer [^WebPay webpay ^String customer-id]
-  (.. webpay customer (retrieve customer-id)))
+(defn ^CustomerResponse retrieve-customer [^WebPay webpay ^String customer]
+  (.. webpay customer (retrieve customer)))
 
 (defn ^ChargeResponse execute-charge
   [^WebPay webpay amount
-   & {:keys [currency customer-id shop token-id description capture expire-days uuid]
+   & {:keys [currency customer shop token description capture expire-days uuid]
       :or {currency "jpy"}}]
-  (assert (or (not (nil? customer-id)) (not (nil? token-id))))
+  (assert (or (not (nil? customer)) (not (nil? token))))
   (-> (.. webpay charge createRequest)
       (.amount (long amount))
       (.currency ^String currency)
       (cond->
-        customer-id
-        (.customer ^String customer-id)
+        customer
+        (.customer ^String customer)
         shop
         (.shop ^String shop)
-        token-id
-        (.card ^String token-id)
+        token
+        (.card ^String token)
         description
         (.description ^String description)
         capture
@@ -67,11 +68,11 @@
         (.uuid ^String uuid))
       .execute))
 
-(defn ^ChargeResponse retrieve-charge [^WebPay webpay ^String charge-id]
-  (.. webpay charge (retrieve charge-id)))
+(defn ^ChargeResponse retrieve-charge [^WebPay webpay ^String charge]
+  (.. webpay charge (retrieve charge)))
 
 (defn retrieve-charges [^WebPay webpay
-                        & {:keys [count offset created customer-id shop recursion]}]
+                        & {:keys [count offset created customer shop recursion]}]
   (let [charges (-> (.. webpay charge allRequest)
                     (cond->
                       count
@@ -80,8 +81,8 @@
                       (.offset (long offset))
                       created
                       (.created (unixtime created))
-                      customer-id
-                      (.customer ^String customer-id)
+                      customer
+                      (.customer ^String customer)
                       shop
                       (.shop ^String shop)
                       recursion
@@ -90,14 +91,14 @@
     (seq (.data ^ChargeResponseList charges))))
 
 (defn ^RecursionResponse create-recursion
-  [^WebPay webpay amount ^String customer-id period
+  [^WebPay webpay amount ^String customer period
    & {:keys [currency shop description first-scheduled uuid]
       :or {currency "jpy"}}]
   (assert (contains? #{:month :year} period))
   (-> (.. webpay recursion createRequest)
       (.amount (long amount))
       (.currency ^String currency)
-      (.customer customer-id)
+      (.customer customer)
       (.period (name period))
       (cond->
         shop
@@ -110,11 +111,11 @@
         (.uuid ^String uuid))
       .execute))
 
-(defn ^RecursionResponse retrieve-recursion [^WebPay webpay ^String recursion-id]
-  (.. webpay recursion (retrieve recursion-id)))
+(defn ^RecursionResponse retrieve-recursion [^WebPay webpay ^String recursion]
+  (.. webpay recursion (retrieve recursion)))
 
-(defn ^RecursionResponse delete-recursion [^WebPay webpay ^String recursion-id]
-  (.. webpay recursion (delete recursion-id)))
+(defn ^RecursionResponse delete-recursion [^WebPay webpay ^String recursion]
+  (.. webpay recursion (delete recursion)))
 
 (defn retrieve-recursions [^WebPay webpay
                            & {:keys [count offset created customer shop suspended]}]
