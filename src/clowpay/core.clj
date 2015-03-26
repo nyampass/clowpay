@@ -54,6 +54,8 @@
         (.description ^String description)
         capture
         (.capture (boolean capture))
+        expire-days
+        (.expireDays (long expire-days))
         uuid
         (.uuid ^String uuid))
       .execute))
